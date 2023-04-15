@@ -1,0 +1,99 @@
+import React, { useState, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ImageBackground, SafeAreaView, Linking, ToastAndroid} from 'react-native';
+import { styles } from './components/style';
+
+const App = () => {
+  const [valor, setValor] = useState('');
+  const [quinzePorcento, setQuinzePorcento] = useState('');
+  const [dezPorcento, setDezPorcento] = useState('');
+  const [cincoPorcento, setCincoPorcento] = useState('');
+  const textInputRef = useRef();
+
+  const openUrl = async(url) => {
+    if(await Linking.canOpenURL("https://comshalom.org/comunhaodebens/")) {
+      await Linking.openURL("https://comshalom.org/comunhaodebens/")
+    }
+    else {
+      ToastAndroid.show("Can't open this URL", ToastAndroid.SHORT)
+    }
+  }
+
+  const formatarValor = (valor) => {
+  return valor.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).replace('.', ',').replace(/(\d)(?=(\d{3})+\,)/g, '$1.');
+};
+
+  const calcular = () => {
+    if (isNaN(parseFloat(valor.replace(',', '.')))) {
+      alert('Insira um valor válido.');
+      return;
+    }
+    const valorFloat = parseFloat(valor.replace(',', '.'));
+    const [quinze, dez, cinco] = calcularPorcentagens(valorFloat);
+    setQuinzePorcento(formatarValor(quinze));
+    setDezPorcento(formatarValor(dez));
+    setCincoPorcento(formatarValor(cinco));
+    textInputRef.current?.blur();
+  };
+
+  const calcularPorcentagens = (valor) => {
+    const quinzePorcento = valor * 0.15;
+    const dezPorcento = quinzePorcento * 0.66666666666666666666666666666667;
+    const cincoPorcento = quinzePorcento - dezPorcento;
+    return [quinzePorcento.toFixed(2), dezPorcento.toFixed(2), cincoPorcento.toFixed(2)];
+  };
+
+  return (
+    <View style={styles.container}>
+      <ImageBackground
+        source={require('./assets/pngegg.png')}
+        style={styles.background}
+      />
+      <Text style={styles.title}>Calculadora C.B Shalom</Text>
+      <Text style={styles.subtitle}>Informe seus rendimentos abaixo:</Text>
+      <SafeAreaView>
+      <TextInput
+      style={styles.input}
+      keyboardType="numeric"
+      value={valor}
+      onChangeText={setValor}
+      onSubmitEditing={() => 
+      Keyboard.dismiss()}/>
+        </SafeAreaView>
+
+      <TouchableOpacity style={styles.button} onPress={calcular}>
+        <Text style={styles.buttonText}>Calcular</Text>
+      </TouchableOpacity>
+
+      <View style={styles.output}>
+        <View style={styles.resultado}>
+          <Text style={styles.titulo}>15%</Text>
+          <Text style={styles.resultadoValor}>R$ {quinzePorcento}</Text>
+        </View>
+
+        <View style={styles.resultado} onPress={formatarValor}>
+          <Text style={styles.titulo}>10%</Text>
+          <Text style={styles.resultadoValor}>R$ {dezPorcento}</Text>
+        </View>
+
+        <View style={styles.resultado}>
+          <Text style={styles.titulo}>5%</Text>
+          <Text style={styles.resultadoValor}>R$ {cincoPorcento}</Text>
+        </View>
+        
+        <View style={styles.btn2Geral}>
+        <TouchableOpacity style={styles.button2} onPress={openUrl}>
+        <Text style={styles.buttonText2}>Fazer a comunhão de bens</Text>
+      </TouchableOpacity>
+      </View>
+
+      </View>
+    </View>
+  );
+};
+
+export default App;
